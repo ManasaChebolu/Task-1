@@ -12,7 +12,7 @@ public static void main(String[] args) throws SQLException  {
 	Logger logger=Logger.getLogger("Employees");
     String input;
     int empId,empSalary;
-    String empName,empType,sql;
+    String empName,empType,sql,tableName;
 	do {
     	System.out.print("1.Create ,2.Modify ,3.Delete ,4.List all employees");
         int n=sc.nextInt();
@@ -28,21 +28,22 @@ public static void main(String[] args) throws SQLException  {
 		       System.out.println("Enter empType permanent /parttime/contract");
 		       empType=sc.nextLine();
 		       if(empType.equals("permanent") || empType.equals("parttime") ||empType.equals("contract")) {
-		       sql="insert into ? values(?,?,?,?)";
-		       PreparedStatement  insertstmt=conn.prepareStatement(sql);
-    	                   insertstmt.setString(1, empType);    	     	       	    	  
-  		           insertstmt.setInt(2, empId);
-  		           insertstmt.setString(3, empName);
-  		           insertstmt.setInt(4, empSalary);
-  		           insertstmt.setString(5, empType); 		          
+		    	tableName = empType;
+			    sql = String.format("INSERT INTO %s VALUES (?,?,?,?) ", tableName);
+		        PreparedStatement  insertstmt=conn.prepareStatement(sql);    	     	       	    	  
+  		           insertstmt.setInt(1, empId);
+  		           insertstmt.setString(2, empName);
+  		           insertstmt.setInt(3, empSalary);
+  		           insertstmt.setString(4, empType); 		          
   		           insertstmt.executeUpdate();	 
 		       }
     			else 
     				System.out.println("No Such Type");
     	      logger.log(Level.INFO, "Employee info is added...");
     	      break;
-    	case 2:System.out.print("Want to modify employee detail in permanent /parttime/contract");
+    	case 2:System.out.println("Want to modify employee detail in permanent /parttime/contract");
     	       System.out.println("Enter empType permanent /parttime/contract");
+    	       sc.nextLine();
     	       empType=sc.nextLine();
 		       if(empType.equals("permanent") || empType.equals("parttime") ||empType.equals("contract")) {
 		           System.out.print("Enter empId to modify: ");
@@ -50,28 +51,28 @@ public static void main(String[] args) throws SQLException  {
 	               System.out.println("Enter empSalary to modify");
 			       empSalary=sc.nextInt();
 			       sc.nextLine();
-    	           sql="update empType=? set empSalary=? where empId=?";
+			       tableName= empType;
+    	           sql=String.format("update %s set empSalary=? where empId=?",tableName);
     	           PreparedStatement updatestmt=conn.prepareStatement(sql);          	  
-                   updatestmt.setString(1,empType);
+                   updatestmt.setInt(1,empSalary);
                    updatestmt.setInt(2,empId);
-                   updatestmt.setInt(3,empSalary);
                    updatestmt.executeUpdate();       
                 }
 		       else
 		    	   System.out.println("No Such Type");
-	            sc.nextLine();
 	            logger.log(Level.INFO, "Employee details updated...");
 	            break;
-    	case 3:System.out.print("Want to delete employee in permanent /parttime/contract");
+    	case 3:System.out.println("Want to delete employee in permanent /parttime/contract");
                System.out.println("Enter empType permanent /parttime/contract");
+               sc.nextLine();
 	           empType=sc.nextLine();
 	           if(empType.equals("permanent") || empType.equals("parttime") ||empType.equals("contract")) {
 		           System.out.print("Enter empId to modify: ");
 	               empId=sc.nextInt();
-	               sql="delete from empType=? where empId=?";
+	               tableName= empType;
+	               sql=String.format("delete from %s where empId=?",tableName);
 	               PreparedStatement deletestmt=conn.prepareStatement(sql);
-	               deletestmt.setString(1,empType);
-	               deletestmt.setInt(2,empId);
+	               deletestmt.setInt(1,empId);
 	               deletestmt.executeUpdate();
 	           }
 	           else
@@ -79,7 +80,7 @@ public static void main(String[] args) throws SQLException  {
 	           logger.log(Level.INFO, "Employee details deleted...");
 	           sc.nextLine();
 	           break;   
-    	case 4:PreparedStatement selectpermanentstmt=conn.prepareStatement("select *from permanenthashtable");
+    	case 4:PreparedStatement selectpermanentstmt=conn.prepareStatement("select *from permanent");
     		   ResultSet rs=selectpermanentstmt.executeQuery();   		 
     		   JSONArray permanentArray=new JSONArray();
     		   while(rs.next()) {
@@ -91,7 +92,7 @@ public static void main(String[] args) throws SQLException  {
  			        permanent.put("empType",rs.getString("empType"));
  			        permanentArray.put(permanent);
     		   }  		   
-    		   PreparedStatement selectparttimestmt=conn.prepareStatement("select *from parttimehashtable");
+    		   PreparedStatement selectparttimestmt=conn.prepareStatement("select *from parttime");
     		   ResultSet rs1=selectparttimestmt.executeQuery();   		     		 
     		   JSONArray parttimeArray=new JSONArray();
     		   while(rs1.next()) {
@@ -103,7 +104,7 @@ public static void main(String[] args) throws SQLException  {
     			     parttime.put("empType",rs1.getString("empType"));
     			     parttimeArray.put(parttime); 
     		   }		   
-    		   PreparedStatement selectcontractstmt=conn.prepareStatement("select *from contracthashtable");
+    		   PreparedStatement selectcontractstmt=conn.prepareStatement("select *from contract");
     		   ResultSet rs2=selectcontractstmt.executeQuery();  		 
     		   JSONArray contractArray=new JSONArray();
     		   while(rs2.next()) {
